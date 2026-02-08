@@ -1,2 +1,2 @@
 npx lint-staged
-pnpm --filter @linux-mgmt/web exec tsc --noEmit
+pnpm --filter @linux-mgmt/web exec tsc --project tsconfig.app.json

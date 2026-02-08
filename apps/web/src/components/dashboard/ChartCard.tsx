@@ -12,7 +12,7 @@ type configprops = {
   title: string
   info: string
   details: string
-  color: boolean
+  color: string
 }
 
 type props = {
