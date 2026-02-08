@@ -10,7 +10,7 @@ const ProtectedLayout = () => {
       <Sidebar isOpen={isSidebarOpen} setOpen={setSidebarOpen} />
       <div className="flex flex-col flex-1">
         <Header isOpen={isSidebarOpen} setOpen={setSidebarOpen} />
-        <main className="flex-1 px-4 py-4">
+        <main className="flex-1 p-6">
           <Outlet />
         </main>
       </div>
