@@ -3,12 +3,15 @@ import ReqRoutes from './configs/routes'
 
 // Layouts
 import AuthLayout from './layouts/AuthLayout'
+import ProtectedLayout from './layouts/ProtectedLayout'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route index element={<ReqRoutes.Dashboard />} />
+        <Route element={<ProtectedLayout />}>
+          <Route index element={<ReqRoutes.Dashboard />} />
+        </Route>
 
         <Route element={<AuthLayout />}>
           <Route path="login" element={<ReqRoutes.Login />} />

@@ -1,7 +1,6 @@
-import { Command } from 'lucide-react'
-
 import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useLocation, Link } from 'react-router'
+import MainLogo from '../logos/MainLogo'
 
 type props = {
   children: React.ReactNode
@@ -16,10 +15,7 @@ const AuthBlock = ({ children }: props) => {
     <Card className="bg-background min-w-sm rounded-sm border-2 border-border">
       <CardHeader>
         <CardTitle className="flex justify-center items-center gap-2 mb-2">
-          <div className="bg-primary inline-flex w-9 h-9 justify-center items-center rounded-md">
-            <Command size={22} color="black" />
-          </div>
-
+          <MainLogo size={22} color="black" />
           <h2 className=" text-xl font-bold">ServerSys</h2>
         </CardTitle>
         <div>
