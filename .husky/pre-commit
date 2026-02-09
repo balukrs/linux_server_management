@@ -1,2 +1,7 @@
+#!/bin/sh
+# Load nvm for GUI apps like SourceTree
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 npx lint-staged
 pnpm --filter @linux-mgmt/web exec tsc --project tsconfig.app.json
