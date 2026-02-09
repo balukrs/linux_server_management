@@ -8,8 +8,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useNavigate } from 'react-router'
 
 function ProfileIcon() {
+  const navigate = useNavigate()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -29,8 +31,7 @@ function ProfileIcon() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/profile')}>Profile</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

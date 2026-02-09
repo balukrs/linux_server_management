@@ -1,5 +1,5 @@
-import type { ColumnDef } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import type { DataTableProps } from '@/types/Table'
 
 import {
   Table,
@@ -10,11 +10,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-}
-
 export default function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -23,14 +18,14 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
   })
 
   return (
-    <div className="overflow-hidden rounded-md border">
+    <div className="rounded-md border w-full overflow-x-auto">
       <Table>
         <TableHeader className="bg-accent">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="py-4 px-6">
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -45,7 +40,7 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
             table.getRowModel().rows.map((row) => (
               <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell key={cell.id} className="py-4 px-6">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -53,7 +48,7 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell colSpan={columns.length} className="h-24 text-center py-4 px-6">
                 No results.
               </TableCell>
             </TableRow>

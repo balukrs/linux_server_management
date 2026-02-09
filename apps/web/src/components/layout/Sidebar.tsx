@@ -35,19 +35,21 @@ const Sidebar = ({ isOpen, setOpen }: props) => {
         </div>
       </div>
       <nav className="px-2">
-        {sidebarconfig.map((item) => {
-          const isactive = item.path === pathname
-          return (
-            <div
-              className={`flex gap-2 mb-4 py-2 px-2  ${isactive && 'bg-sidebar-ring/20 rounded-lg'} ${isTransition && !isOpen && 'justify-center'}`}
-            >
-              <Link to={item.path} className="flex gap-2">
-                <item.icon size={22} />
-                {isOpen && item.name}
-              </Link>
-            </div>
-          )
-        })}
+        {sidebarconfig
+          .filter((x) => x.visble)
+          .map((item) => {
+            const isactive = item.path === pathname
+            return (
+              <div
+                className={`flex gap-2 mb-4 py-2 px-2  ${isactive && 'bg-sidebar-ring/20 rounded-lg'} ${isTransition && !isOpen && 'justify-center'}`}
+              >
+                <Link to={item.path} className="flex gap-2">
+                  <item.icon size={22} />
+                  {isOpen && item.name}
+                </Link>
+              </div>
+            )
+          })}
       </nav>
     </aside>
   )

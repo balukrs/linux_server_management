@@ -1,8 +1,10 @@
 import { TextAlignJustify, Bell } from 'lucide-react'
 import { Button } from '../ui/button'
-
 import { Badge } from '@/components/ui/badge'
 import ProfileIcon from './ProfileIcon'
+
+import { useLocation, useNavigate } from 'react-router'
+import sidebarconfigs from '../../configs/sidebar'
 
 type props = {
   isOpen: boolean
@@ -10,6 +12,11 @@ type props = {
 }
 
 const Header = ({ isOpen, setOpen }: props) => {
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+
+  const title = sidebarconfigs.find((item) => item.path === pathname)?.name
+
   return (
     <header className="flex items-center justify-between py-4 px-4 border-b">
       <div className="flex items-center gap-3">
@@ -19,10 +26,15 @@ const Header = ({ isOpen, setOpen }: props) => {
             setOpen(!isOpen)
           }}
         />
-        <h1 className=" text-xl">Server Manager</h1>
+        <h1 className=" text-xl ">{title || 'Server Manager'}</h1>
       </div>
       <div className="flex items-center gap-3">
-        <Button variant="outline" size="icon" className="relative">
+        <Button
+          variant="outline"
+          size="icon"
+          className="relative"
+          onClick={() => navigate('/notifications')}
+        >
           <Bell />
           <Badge
             variant="destructive"
