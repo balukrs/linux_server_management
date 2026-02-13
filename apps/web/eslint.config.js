@@ -46,7 +46,7 @@ export default [
   },
   // React-specific config for web workspace
   {
-    files: ['apps/web/**/*.{ts,tsx}'],
+    files: ['**/*.{ts,tsx}'],
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,

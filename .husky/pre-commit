@@ -4,4 +4,5 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 npx lint-staged
-pnpm --filter @linux-mgmt/web exec tsc --project tsconfig.app.json
+turbo run lint
+turbo run type-check

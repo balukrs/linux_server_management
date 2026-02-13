@@ -4,25 +4,46 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "dev": "tsx --watch --env-file .env src/index.ts",
+    "prod": "tsx --watch --env-file .env.production src/index.ts",
     "start": "node dist/index.js",
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "imports": {
+    "#*": "./src/*"
   },
   "dependencies": {
     "@linux-mgmt/shared": "workspace:*",
+    "@prisma/adapter-pg": "^7.4.0",
+    "@prisma/client": "^7.4.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "morgan": "^1.10.1",
+    "pg": "^8.18.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@tsconfig/node24": "^24.0.4",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^24.10.1",
+    "@types/pg": "^8.16.0",
     "eslint": "^9.39.2",
+    "eslint-plugin-jest": "^29.14.0",
+    "eslint-plugin-perfectionist": "^5.5.0",
     "globals": "^16.5.0",
+    "prisma": "^7.4.0",
+    "ts-jest": "^29.4.6",
     "tsx": "^4.19.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.54.0"

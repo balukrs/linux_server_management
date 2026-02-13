@@ -40,14 +40,15 @@ const Sidebar = ({ isOpen, setOpen }: props) => {
           .map((item) => {
             const isactive = item.path === pathname
             return (
-              <div
+              <Link
+                to={item.path}
                 className={`flex gap-2 mb-4 py-2 px-2  ${isactive && 'bg-sidebar-ring/20 rounded-lg'} ${isTransition && !isOpen && 'justify-center'}`}
               >
-                <Link to={item.path} className="flex gap-2">
+                <div className="flex gap-2">
                   <item.icon size={22} />
                   {isOpen && item.name}
-                </Link>
-              </div>
+                </div>
+              </Link>
             )
           })}
       </nav>
