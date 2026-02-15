@@ -1,5 +1,8 @@
+import config from '#config/index.js'
+
 import { createServer } from './server.js'
-const port = process.env.PORT ?? '9001'
+
+const port = config.port
 
 const server = createServer()
 

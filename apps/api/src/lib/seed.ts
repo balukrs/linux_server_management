@@ -1,16 +1,18 @@
-import { Role } from '#generated/prisma/client.js'
+import config from '#config/index.js'
+import { Role } from '@linux-mgmt/db'
 import { hashSync } from 'bcrypt'
 
 import { prisma } from './prisma.js'
 
 const saltRounds = 10
-const password = 'mySecurePassword'
+const password = config.adminpassword
 
 async function main() {
   const hash = hashSync(password, saltRounds)
 
   await prisma.user.upsert({
     create: {
+      email: 'baluk05@gmail.com',
       password: hash,
       role: Role.ADMIN,
       username: 'admin',

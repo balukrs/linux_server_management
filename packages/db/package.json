@@ -1,0 +1,27 @@
+{
+  "name": "@linux-mgmt/db",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "migrate:dev": "prisma migrate dev",
+    "migrate": "prisma migrate deploy",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.4.0",
+    "@prisma/client-runtime-utils": "^7.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.11",
+    "dotenv": "^16.4.7",
+    "prisma": "^7.4.0",
+    "typescript": "~5.9.3"
+  }
+}

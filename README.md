@@ -10,6 +10,7 @@ linux-machine-management/
 │   ├── web/              # React + Vite frontend
 │   └── api/              # Node.js + Express backend
 ├── packages/
+│   ├── db/               # Prisma ORM, schema, and database client
 │   └── shared/           # Shared types and utilities
 ├── turbo.json            # Turborepo configuration
 ├── pnpm-workspace.yaml   # pnpm workspace definition
@@ -87,6 +88,16 @@ pnpm --filter @linux-mgmt/api lint
 - **Port:** 3000 (default)
 - **Features:** TypeScript with tsx watch mode
 
+### `packages/db` - Database
+
+- **Stack:** Prisma 7, PostgreSQL
+- **Purpose:** Database schema, migrations, and generated Prisma client
+- **Usage:** Imported as `@linux-mgmt/db` in the backend
+- **Commands:**
+  - `pnpm --filter @linux-mgmt/db prisma:generate` - Generate Prisma client
+  - `pnpm --filter @linux-mgmt/db migrate:dev` - Run dev migrations
+  - `pnpm --filter @linux-mgmt/db migrate` - Deploy migrations
+
 ### `packages/shared` - Shared Code
 
 - **Purpose:** Shared types, interfaces, and utilities
@@ -131,13 +142,16 @@ Automated code quality checks on every commit:
 
 ## 🔧 Key Commands
 
-| Command                               | Description                       |
-| ------------------------------------- | --------------------------------- |
-| `pnpm dev`                            | Run all apps in dev mode          |
-| `pnpm build`                          | Build all apps                    |
-| `pnpm lint`                           | Lint all workspaces               |
-| `pnpm format`                         | Format all files                  |
-| `pnpm --filter <workspace> <command>` | Run command in specific workspace |
+| Command                                        | Description                       |
+| ---------------------------------------------- | --------------------------------- |
+| `pnpm dev`                                     | Run all apps in dev mode          |
+| `pnpm build`                                   | Build all apps                    |
+| `pnpm lint`                                    | Lint all workspaces               |
+| `pnpm format`                                  | Format all files                  |
+| `pnpm --filter <workspace> <command>`          | Run command in specific workspace |
+| `pnpm --filter @linux-mgmt/db prisma:generate` | Generate Prisma client            |
+| `pnpm --filter @linux-mgmt/db migrate:dev`     | Run database migrations (dev)     |
+| `pnpm --filter @linux-mgmt/api db:seed`        | Seed the database                 |
 
 ## 🐳 Docker Support (Future)
 
@@ -157,12 +171,13 @@ Workspaces can depend on each other using `workspace:*` protocol:
 ```json
 {
   "dependencies": {
+    "@linux-mgmt/db": "workspace:*",
     "@linux-mgmt/shared": "workspace:*"
   }
 }
 ```
 
-Changes in `packages/shared` are automatically available to apps without republishing.
+Changes in workspace packages are automatically available to apps without republishing.
 
 ## 📝 Adding New Packages
 
