@@ -11,7 +11,7 @@
     "moduleResolution": "Bundler",
 
     // For nodejs:
-    "types": ["node", "jest", "cors", "morgan", "pg", "bcrypt", "jsonwebtoken"],
+    "types": ["node", "jest", "cors", "morgan", "pg", "bcrypt", "jsonwebtoken", "cookie-parser"],
 
     // Other Outputs
     "sourceMap": true,
