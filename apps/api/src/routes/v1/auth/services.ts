@@ -139,3 +139,8 @@ export const logoutUser = async (refreshToken: string) => {
     },
   })
 }
+
+export const getTokenDetails = (token: string) => {
+  const payload = Jwt.verify(token, config.secret)
+  return payload
+}

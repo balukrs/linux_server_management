@@ -1,3 +1,4 @@
+import type { TokenPayload } from '#types/Auth.js'
 import type { ReqOptimised } from '#types/Request.js'
 import type { NextFunction, Response } from 'express'
 
@@ -5,13 +6,6 @@ import config from '#config/index.js'
 import { handleRefreshTokenExpiry } from '#routes/v1/auth/services.js'
 import { getErrorMessage, UnAuthorized } from '#utils/errors.js'
 import Jwt from 'jsonwebtoken'
-
-interface TokenPayload {
-  email: string
-  id: string
-  role: string
-  username: string
-}
 
 export default async function authHandler(req: ReqOptimised, res: Response, next: NextFunction) {
   const accessToken = req.cookies.accessToken
