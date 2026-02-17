@@ -6,6 +6,8 @@ import { EntityNotFound, OperationFailed } from '#utils/errors.js'
 import bcrypt from 'bcrypt'
 import Jwt from 'jsonwebtoken'
 
+import { modifyCode } from '../services'
+
 export const findUserByEmail = async (email: string): Promise<null | User> => {
   return prisma.user.findUnique({
     where: {
@@ -13,7 +15,6 @@ export const findUserByEmail = async (email: string): Promise<null | User> => {
     },
   })
 }
-
 export const findUserById = async (id: string): Promise<null | User> => {
   return prisma.user.findUnique({
     where: {
@@ -22,7 +23,75 @@ export const findUserById = async (id: string): Promise<null | User> => {
   })
 }
 
-export const registerUser = async (username: string, password: string, email: string) => {
+export const generateTokens = async (user: User, token?: string) => {
+  const accessToken = Jwt.sign(
+    { email: user.email, id: user.id, role: user.role, username: user.username },
+    config.secret,
+    {
+      expiresIn: '1h',
+    },
+  )
+  const refreshToken = Jwt.sign(
+    { email: user.email, id: user.id, role: user.role, username: user.username },
+    config.secret,
+    {
+      expiresIn: '7d',
+    },
+  )
+
+  await prisma.refreshToken.upsert({
+    create: {
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      token: refreshToken,
+      userId: user.id,
+    },
+    update: {
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      token: refreshToken,
+      userId: user.id,
+    },
+    where: { token: token ?? '' },
+  })
+
+  return { accessToken, refreshToken }
+}
+
+export const handleRefreshTokenExpiry = async (refreshtoken: string) => {
+  const token = await prisma.refreshToken.findUnique({
+    where: {
+      token: refreshtoken,
+    },
+  })
+
+  if (token) {
+    const user = await findUserById(token.userId)
+
+    if (user && token.expiresAt > new Date()) {
+      const { accessToken, refreshToken } = await generateTokens(user, refreshtoken)
+      return { accessToken, refreshToken }
+    }
+    return null
+  }
+}
+
+export const registerUser = async (
+  username: string,
+  password: string,
+  email: string,
+  code: string,
+): Promise<User> => {
+  const existingUser = await findUserByEmail(email)
+
+  if (existingUser) {
+    throw new OperationFailed({
+      code: 'ERR_FAILED',
+      message: 'User already registered',
+      statusCode: 400,
+    })
+  }
+
+  await modifyCode(code, email)
+
   const hashedPassword = await bcrypt.hash(password, 10)
   const user = await prisma.user.create({
     data: {
@@ -34,7 +103,14 @@ export const registerUser = async (username: string, password: string, email: st
   return user
 }
 
-export const loginUser = async (email: string, password: string) => {
+export const loginUser = async (
+  email: string,
+  password: string,
+): Promise<{
+  accessToken: string
+  refreshToken: string
+  user: User
+}> => {
   const user = await findUserByEmail(email)
 
   if (!user) {
@@ -51,12 +127,15 @@ export const loginUser = async (email: string, password: string) => {
     })
   }
 
-  const token = Jwt.sign(
-    { email: user.email, id: user.id, username: user.username },
-    config.secret,
-    {
-      expiresIn: '1h',
+  const { accessToken, refreshToken } = await generateTokens(user)
+
+  return { accessToken, refreshToken, user }
+}
+
+export const logoutUser = async (refreshToken: string) => {
+  await prisma.refreshToken.delete({
+    where: {
+      token: refreshToken,
     },
-  )
-  return token
+  })
 }

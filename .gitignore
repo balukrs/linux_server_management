@@ -24,6 +24,10 @@ build
 # Turborepo
 .turbo
 
+# Postman
+.postman/
+postman/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

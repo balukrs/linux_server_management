@@ -12,8 +12,10 @@ export class CustomError<C> extends Error {
   }
 }
 
+export class EntityExists extends CustomError<ErrorCode> {}
 export class EntityNotFound extends CustomError<ErrorCode> {}
 export class OperationFailed extends CustomError<ErrorCode> {}
+export class UnAuthorized extends CustomError<ErrorCode> {}
 
 // General Error
 export function getErrorMessage(error: unknown): string {

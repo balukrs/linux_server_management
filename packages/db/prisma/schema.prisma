@@ -36,6 +36,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   activityLogs ActivityLog[]
+  refreshTokens RefreshToken[]
 }
 
 // System Metrics Schema
@@ -54,7 +55,7 @@ model SystemMetric {
 model AccessCode {
     id        String   @id @default(uuid())
     code      String   @unique
-    email     String
+    email     String   @unique
     role      Role     @default(VIEWER)
     used      Boolean  @default(false)
     expiresAt DateTime
@@ -113,3 +114,17 @@ model Notification {
 
   @@index([read, timestamp])
 }
+
+// Refresh Token
+ model RefreshToken {
+    id        String   @id @default(uuid())
+    token     String   @unique
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    expiresAt DateTime
+    createdAt DateTime @default(now())
+
+    @@index([token])
+    @@index([userId])
+    @@index([expiresAt])
+  } 
