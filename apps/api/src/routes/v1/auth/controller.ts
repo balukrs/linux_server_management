@@ -1,10 +1,11 @@
+import type { TokenPayload } from '#types/Auth.js'
 import type { LoginRequest, SignUpRequest } from '@linux-mgmt/shared'
 import type { Request, Response } from 'express'
 
 import { getErrorMessage, OperationFailed } from '#utils/errors.js'
 import { sendSuccess } from '#utils/response.js'
 
-import { loginUser, logoutUser, registerUser } from './services.js'
+import { getTokenDetails, loginUser, logoutUser, registerUser } from './services.js'
 
 type RequestAdd = Request & { cookies: RequestCookieType }
 
@@ -73,6 +74,26 @@ export const logout = async (req: RequestAdd, res: Response) => {
     res.clearCookie('refreshToken')
     res.clearCookie('accessToken')
     sendSuccess(res, 'Logout Successful', 200, {})
+  } catch (error) {
+    throw new OperationFailed({
+      code: 'ERR_FAILED',
+      message: getErrorMessage(error),
+      statusCode: 400,
+    })
+  }
+}
+
+export const getDetails = (req: RequestAdd, res: Response) => {
+  const accessToken = req.cookies.accessToken
+  try {
+    const payload = getTokenDetails(String(accessToken)) as TokenPayload
+
+    sendSuccess(res, 'Detailed Fetched Successfully', 200, {
+      email: payload.email,
+      id: payload.id,
+      role: payload.role,
+      username: payload.username,
+    })
   } catch (error) {
     throw new OperationFailed({
       code: 'ERR_FAILED',
