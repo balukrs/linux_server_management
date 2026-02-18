@@ -98,6 +98,22 @@ GROUP BY true
 
 ## Recent Updates
 
+### 2026-02-18
+
+- Completed: [[Define Shared Types Package]]
+
+### 2026-02-17
+
+- Completed: [[Backend Authentication & Authorization]]
+- Completed: [[Add RefreshToken model and migrate]]
+- Completed: [[Create auth middleware + requireAdmin]]
+- Completed: [[Create auth utilities (hash, JWT, cookies)]]
+- Completed: [[Implement GET _api_auth_me]]
+- Completed: [[Implement POST _api_auth_login]]
+- Completed: [[Implement POST _api_auth_logout]]
+- Completed: [[Implement POST _api_auth_signup]]
+- Completed: [[Register routes and apply middleware]]
+
 ### 2026-02-13
 
 - Completed: [[Set Up Database (PostgreSQL + Prisma)]]
