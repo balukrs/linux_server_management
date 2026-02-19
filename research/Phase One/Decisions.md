@@ -12,6 +12,72 @@ _None — all Phase One decisions resolved._
 
 ## Decided
 
+### 2026-02-18 — Development & Deployment Strategy
+
+**Decision:** Develop directly on the Raspberry Pi (Linux), with Mac as optional verification environment
+
+**Options considered:**
+
+- Develop on Mac with mock `/proc` layer, deploy to Pi for testing — adds abstraction complexity
+- Develop directly on Pi (Linux) — real system data from day one, no mocks needed
+- Docker-based dev environment — inconsistent across architectures (arm64 vs x86), unnecessary complexity during development
+
+**Rationale:** The goal is to learn how Linux system interfaces work. Developing directly on the Pi means real `/proc` data from the start — no mock layers, no cross-platform abstractions. The monorepo is cloned on the Pi with PostgreSQL installed locally. Mac can be used later to verify frontend/UI work by importing a DB backup. Docker is avoided during development to reduce environment complexity.
+
+**Impact:**
+
+- Full repo cloned on Pi, `pnpm install` and `pnpm dev` to run
+- PostgreSQL installed directly on Pi
+- Per-machine `.env` files for PORT, DATABASE_URL, etc.
+- No mock `/proc` layer needed in the codebase
+- DB backup strategy (S3 or similar) to be decided separately for Mac verification
+- System metric collection reads real `/proc` files during development
+
+---
+
+### 2026-02-18 — Metric Storage Model
+
+**Decision:** Multi-row flat model with specific type discriminators (no schema change)
+
+**Options considered:**
+
+- Multi-row with sub-typed `type` field (e.g., MEMORY_USED, MEMORY_TOTAL) — no schema change, simple queries
+- Add JSON `metadata` field to SystemMetric — flexible but harder to query/index
+- Add extra columns (valueSecondary, etc.) — wastes space for single-value metrics
+
+**Rationale:** The existing `SystemMetric` model (`type`, `value`, `unit`, `timestamp`) stays unchanged. Multi-valued metrics (memory used/total, network in/out) are stored as separate rows with specific type discriminators. Each `type` maps directly to one chart line, making time-series queries straightforward (`WHERE type = 'CPU' AND timestamp > ?`). ~5-6 rows per 15-second cycle is negligible overhead.
+
+**Impact:**
+
+- Type values: `CPU`, `MEMORY_USED`, `MEMORY_TOTAL`, `NETWORK_IN`, `NETWORK_OUT`, `DISK_USED`, `DISK_TOTAL`
+- ~5-6 rows per collection cycle (every 15 seconds)
+- No changes to `db_schema.md` model definition
+- Dashboard API queries filter by specific type
+
+---
+
+### 2026-02-18 — Metric Collection Scheduler
+
+**Decision:** `setInterval` inside Express process on app boot
+
+**Options considered:**
+
+- `setInterval` in Express — zero extra memory, negligible CPU, simplest approach
+- System cron job — minimum 1-minute granularity, spawns new Node.js process each run (~30-50MB)
+- Separate background Node.js process — doubles memory footprint, adds operational complexity
+- systemd timer — supports seconds but still spawns a process each invocation
+
+**Rationale:** The Express process is already running. A `setInterval` callback costs essentially nothing in the event loop. Reading `/proc` files is non-blocking microsecond I/O, and one Prisma `createMany` per cycle takes milliseconds. Total work: <10ms every 15 seconds. No reason to add process spawn overhead or operational complexity on a resource-constrained Pi.
+
+**Impact:**
+
+- Collector starts on Express app boot via `setInterval(collectMetrics, 15000)`
+- Runs in-process, shares memory with Express
+- If Express stops, collection stops (appropriate — no one's viewing data if the app is down)
+- No external cron or systemd configuration needed
+
+---
+
 ### 2026-02-16 — JWT Token Durations & Refresh Strategy
 
 **Decision:** 1-hour access token, 7-day DB-backed refresh token

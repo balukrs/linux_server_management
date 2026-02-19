@@ -38,3 +38,6 @@ postman/
 *.njsproj
 *.sln
 *.sw?
+
+#prisma
+/generated/prisma
