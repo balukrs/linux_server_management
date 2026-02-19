@@ -40,4 +40,4 @@ postman/
 *.sw?
 
 #prisma
-/generated/prisma
+packages/db/src/generated/
