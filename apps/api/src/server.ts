@@ -1,15 +1,15 @@
 import errorHandler from '#middleware/error-handling.js'
+import morganMiddleware from '#middleware/morgan-middleware.js'
 import v1 from '#routes/v1/index.js'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express, { type Express, type Request, type Response } from 'express'
-import morgan from 'morgan'
 
 export const createServer = (): Express => {
   const app = express()
   app
     .disable('x-powered-by')
-    .use(morgan('dev'))
+    .use(morganMiddleware)
     .use(express.urlencoded({ extended: true }))
     .use(express.json())
     .use(cors())
