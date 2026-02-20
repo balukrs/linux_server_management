@@ -2,7 +2,8 @@ import type { AccessCodeRequest } from '@linux-mgmt/shared'
 
 import { prisma } from '#lib/prisma.js'
 import { EntityExists } from '#utils/errors.js'
-import { OperationFailed } from '#utils/errors.js'
+import { ValidationErrors } from '#utils/errors.js'
+import { SignUpRequestKeys } from '@linux-mgmt/shared'
 import crypto from 'crypto'
 
 function generateSecure5DigitCode() {
@@ -19,32 +20,40 @@ export const modifyCode = async (code: string, email: string) => {
 
   if (accesscode) {
     if (accesscode.email !== email) {
-      throw new OperationFailed({
+      throw new ValidationErrors<typeof SignUpRequestKeys>({
         code: 'ERR_FAILED',
+        fields: { email: 'Invalid Email' },
         message: 'Invalid Email',
         statusCode: 400,
+        validation: true,
       })
     }
     if (accesscode.expiresAt < new Date(Date.now())) {
-      throw new OperationFailed({
+      throw new ValidationErrors<typeof SignUpRequestKeys>({
         code: 'ERR_FAILED',
+        fields: { code: 'Code Expired' },
         message: 'Code Expired',
         statusCode: 400,
+        validation: true,
       })
     }
     if (accesscode.used) {
-      throw new OperationFailed({
+      throw new ValidationErrors<typeof SignUpRequestKeys>({
         code: 'ERR_FAILED',
+        fields: { code: 'Code Expired' },
         message: 'Code Expired',
         statusCode: 400,
+        validation: true,
       })
     }
     await prisma.accessCode.update({ data: { used: true }, where: { email } })
   } else
-    throw new OperationFailed({
+    throw new ValidationErrors<typeof SignUpRequestKeys>({
       code: 'ERR_FAILED',
+      fields: { code: 'Code not Available' },
       message: 'Code not Available',
       statusCode: 400,
+      validation: true,
     })
 }
 

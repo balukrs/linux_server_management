@@ -2,7 +2,8 @@ import type { User } from '@linux-mgmt/db'
 
 import config from '#config/index.js'
 import { prisma } from '#lib/prisma.js'
-import { EntityNotFound, OperationFailed } from '#utils/errors.js'
+import { ValidationErrors } from '#utils/errors.js'
+import { LoginRequestKeys } from '@linux-mgmt/shared'
 import bcrypt from 'bcrypt'
 import Jwt from 'jsonwebtoken'
 
@@ -83,10 +84,12 @@ export const registerUser = async (
   const existingUser = await findUserByEmail(email)
 
   if (existingUser) {
-    throw new OperationFailed({
+    throw new ValidationErrors<typeof LoginRequestKeys>({
       code: 'ERR_FAILED',
+      fields: { email: 'User already registered' },
       message: 'User already registered',
       statusCode: 400,
+      validation: true,
     })
   }
 
@@ -114,16 +117,24 @@ export const loginUser = async (
   const user = await findUserByEmail(email)
 
   if (!user) {
-    throw new EntityNotFound({ code: 'ERR_NF', message: 'User not found', statusCode: 401 })
+    throw new ValidationErrors<typeof LoginRequestKeys>({
+      code: 'ERR_NF',
+      fields: { email: 'User not found' },
+      message: 'User not found',
+      statusCode: 400,
+      validation: true,
+    })
   }
 
   const isMatch = await bcrypt.compare(password, user.password)
 
   if (!isMatch) {
-    throw new OperationFailed({
+    throw new ValidationErrors<typeof LoginRequestKeys>({
       code: 'ERR_FAILED',
+      fields: { password: 'Invalid Password' },
       message: 'Invalid Password',
       statusCode: 400,
+      validation: true,
     })
   }
 

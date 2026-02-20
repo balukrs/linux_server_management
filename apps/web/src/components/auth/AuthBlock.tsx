@@ -21,7 +21,9 @@ const AuthBlock = ({ children }: props) => {
         <div>
           <h2 className="text-2xl font-bold mb-0.5">{isLogin ? 'Login' : 'Register'}</h2>
           <p className="text-sm text-muted-foreground">
-            Enter your email below to login to your account
+            {isLogin
+              ? 'Enter your email below to login to your account'
+              : 'Enter details to register your account'}
           </p>
         </div>
       </CardHeader>

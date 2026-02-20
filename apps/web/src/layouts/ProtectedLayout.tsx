@@ -4,8 +4,24 @@ import Header from '@/components/layout/Header'
 import { useState } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
+import { useQuery } from '@tanstack/react-query'
+import { me } from '../api/services/auth'
+
+import FullScreenLoader from '@/components/common/PageLoader'
+
 const ProtectedLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(true)
+
+  const { isLoading } = useQuery({
+    queryKey: ['me'],
+    queryFn: me,
+    staleTime: 1000 * 60 * 10,
+  })
+
+  if (isLoading) {
+    return <FullScreenLoader />
+  }
+
   return (
     <div className="h-screen flex">
       <Sidebar isOpen={isSidebarOpen} setOpen={setSidebarOpen} />

@@ -2,7 +2,7 @@ import type { TokenPayload } from '#types/Auth.js'
 import type { LoginRequest, SignUpRequest } from '@linux-mgmt/shared'
 import type { Request, Response } from 'express'
 
-import { getErrorMessage, OperationFailed } from '#utils/errors.js'
+import { CustomError, getErrorMessage, OperationFailed } from '#utils/errors.js'
 import { sendSuccess } from '#utils/response.js'
 
 import { getTokenDetails, loginUser, logoutUser, registerUser } from './services.js'
@@ -17,13 +17,10 @@ interface RequestCookieType {
 export const signUp = async (req: Request<object, object, SignUpRequest>, res: Response) => {
   try {
     const { code, email, password, username } = req.body
-    const user = await registerUser(username, password, email, code)
-    sendSuccess(res, 'User Registered', 201, {
-      email: user.email,
-      role: user.role,
-      username: user.username,
-    })
+    await registerUser(username, password, email, code)
+    sendSuccess(res, 'User Registered', 201, {})
   } catch (error) {
+    if (error instanceof CustomError) throw error
     throw new OperationFailed({
       code: 'ERR_FAILED',
       message: getErrorMessage(error),
@@ -36,7 +33,7 @@ export const login = async (req: Request<object, object, LoginRequest>, res: Res
   try {
     const { email, password } = req.body
 
-    const { accessToken, refreshToken, user } = await loginUser(email, password)
+    const { accessToken, refreshToken } = await loginUser(email, password)
 
     if (accessToken) {
       res.cookie('accessToken', accessToken, {
@@ -51,13 +48,10 @@ export const login = async (req: Request<object, object, LoginRequest>, res: Res
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
       })
-      sendSuccess(res, 'Login Successful', 201, {
-        email: user.email,
-        role: user.role,
-        username: user.username,
-      })
+      sendSuccess(res, 'Login Successful', 201, {})
     }
   } catch (error) {
+    if (error instanceof CustomError) throw error
     throw new OperationFailed({
       code: 'ERR_FAILED',
       message: getErrorMessage(error),
@@ -75,6 +69,7 @@ export const logout = async (req: RequestAdd, res: Response) => {
     res.clearCookie('accessToken')
     sendSuccess(res, 'Logout Successful', 200, {})
   } catch (error) {
+    if (error instanceof CustomError) throw error
     throw new OperationFailed({
       code: 'ERR_FAILED',
       message: getErrorMessage(error),
@@ -95,6 +90,7 @@ export const getDetails = (req: RequestAdd, res: Response) => {
       username: payload.username,
     })
   } catch (error) {
+    if (error instanceof CustomError) throw error
     throw new OperationFailed({
       code: 'ERR_FAILED',
       message: getErrorMessage(error),

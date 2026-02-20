@@ -19,6 +19,9 @@ export default [
         ...globals.node,
         ...globals.browser,
       },
+      parserOptions: {
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     rules: {
       '@typescript-eslint/no-unused-vars': [
