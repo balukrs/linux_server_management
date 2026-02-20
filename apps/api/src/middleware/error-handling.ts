@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 
 import config from '../config/index.js'
 import { getErrorMessage } from '../utils/errors.js'
-import { CustomError } from '../utils/errors.js'
+import { CustomError, ValidationErrors } from '../utils/errors.js'
 
 export default function errorHandler(
   error: unknown,
@@ -15,10 +15,21 @@ export default function errorHandler(
     return
   }
 
+  if (error instanceof ValidationErrors) {
+    res.status(error.statusCode).json({
+      error: {
+        code: error.code,
+        fields: error.fields,
+        message: error.message,
+        validation: error.validation,
+      },
+    })
+    return
+  }
   if (error instanceof CustomError) {
-    res
-      .status(error.statusCode)
-      .json({ error: { code: String(error.code), message: error.message } })
+    res.status(error.statusCode).json({
+      error: { code: String(error.code), message: error.message },
+    })
     return
   }
 

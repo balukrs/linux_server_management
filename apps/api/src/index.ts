@@ -18,19 +18,21 @@ const server = app.listen(port, () => {
     })
   }
 
-  safeCollect()
-  const intervalId = setInterval(safeCollect, 15_000)
+  if (config.scheduler) {
+    safeCollect()
+    const intervalId = setInterval(safeCollect, 15_000)
 
-  const shutdown = () => {
-    clearInterval(intervalId)
-    server.close(() => {
-      prisma
-        .$disconnect()
-        .then(() => process.exit(0))
-        .catch(() => process.exit(1))
-    })
+    const shutdown = () => {
+      clearInterval(intervalId)
+      server.close(() => {
+        prisma
+          .$disconnect()
+          .then(() => process.exit(0))
+          .catch(() => process.exit(1))
+      })
+    }
+
+    process.on('SIGTERM', shutdown)
+    process.on('SIGINT', shutdown)
   }
-
-  process.on('SIGTERM', shutdown)
-  process.on('SIGINT', shutdown)
 })
