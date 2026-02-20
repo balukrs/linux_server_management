@@ -9,9 +9,32 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useNavigate } from 'react-router'
+import { me, logout } from '@/api/services/auth'
+import { queryClient } from '@/lib/queryClient'
+import { useQuery, useMutation } from '@tanstack/react-query'
 
 function ProfileIcon() {
   const navigate = useNavigate()
+
+  const { data } = useQuery({
+    queryKey: ['me'],
+    queryFn: me,
+    staleTime: 1000 * 60 * 10,
+  })
+
+  const { mutate } = useMutation({ mutationFn: logout })
+
+  const user = data?.data
+
+  const handleLogut = () => {
+    mutate(undefined, {
+      onSettled: () => {
+        queryClient.clear()
+        navigate('/login')
+      },
+    })
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,8 +48,8 @@ function ProfileIcon() {
       <DropdownMenuContent className="w-xs" align="end" sideOffset={8}>
         <DropdownMenuGroup>
           <DropdownMenuItem className="flex flex-col items-start">
-            <p>Admin User</p>
-            <p>admin@example.com</p>
+            <p>{user?.username}</p>
+            <p>{user?.email}</p>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -35,7 +58,9 @@ function ProfileIcon() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem variant="destructive">Log out</DropdownMenuItem>
+          <DropdownMenuItem variant="destructive" onClick={() => handleLogut()}>
+            Log out
+          </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
