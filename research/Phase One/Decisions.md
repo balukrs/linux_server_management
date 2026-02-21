@@ -12,6 +12,44 @@ _None — all Phase One decisions resolved._
 
 ## Decided
 
+### 2026-02-20 — WebSocket Library
+
+**Decision:** socket.io
+
+**Options considered:**
+
+- `ws` — minimal (~11KB), explicit, uses native browser WebSocket API. No client bundle.
+- `socket.io` — higher-level, auto-reconnect, event-based API, rooms/namespaces for Phase Two. ~45KB gzipped client bundle.
+
+**Rationale:** For 2–3 users on a local network with 15-second broadcasts, socket.io adds negligible load on the Raspberry Pi 5. Auto-reconnect means the dashboard recovers silently after restarts. The event-based API reduces boilerplate on both server and client. The Phase Two control features will benefit from socket.io's rooms and namespaces.
+
+**Impact:**
+
+- Install `socket.io` in `apps/api`
+- Install `socket.io-client` in `apps/web`
+- Socket.io server attaches to the same Express HTTP server instance (no separate port)
+
+---
+
+### 2026-02-20 — Collector-to-WebSocket Coupling
+
+**Decision:** Node.js EventEmitter bus
+
+**Options considered:**
+
+- EventEmitter bus — shared singleton emitter; collector emits, WS server listens. Decoupled modules.
+- Direct function call — `collectMetrics()` directly calls `broadcastMetrics()` after persisting.
+
+**Rationale:** Zero runtime performance difference (EventEmitter.emit is synchronous). EventEmitter keeps the collector module independent of the WS server — no circular imports, and future subscribers (e.g., notification checker watching for CPU spikes) can be added without touching the collector.
+
+**Impact:**
+
+- New shared module: `src/events/metricsEventBus.ts` — exports a single `EventEmitter` instance
+- `collectMetrics()` emits `'batch-collected'` after each successful `createMany`
+- Socket.io broadcaster listens on `'batch-collected'` and calls `io.emit('metrics-update', payload)`
+
+---
+
 ### 2026-02-18 — Development & Deployment Strategy
 
 **Decision:** Develop directly on the Raspberry Pi (Linux), with Mac as optional verification environment

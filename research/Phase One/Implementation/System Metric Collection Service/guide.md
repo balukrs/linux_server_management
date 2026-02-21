@@ -2,7 +2,7 @@
 task: '[[System Metric Collection Service]]'
 phase: Phase One
 created: 2026-02-18
-status: Draft
+status: Done
 ---
 
 # Implementation Guide: System Metric Collection Service
