@@ -1,10 +1,15 @@
+import { metricsEventBus } from '#lib/eventbus.js'
 import { prisma } from '#lib/prisma.js'
+import Logger from '#logger.js'
+import { getErrorMessage } from '#utils/errors.js'
 
 import {
   generateCpuMetricsPercentage,
+  generateCpuTempMetrics,
   generateMemoryMetrics,
   generateNetworkRate,
   generateStogeInfo,
+  generateUpTimeMetrics,
 } from './metrics'
 
 async function metricsCollector() {
@@ -12,6 +17,8 @@ async function metricsCollector() {
   let memorydata = null
   let networkdata = null
   let storagedata = null
+  let tempdata = null
+  let uptimedata = null
 
   interface ResultType {
     type: string
@@ -53,8 +60,29 @@ async function metricsCollector() {
     }
   }
 
+  try {
+    tempdata = await generateCpuTempMetrics()
+  } catch (error) {
+    if (error) {
+      tempdata = null
+    }
+  }
+  try {
+    uptimedata = await generateUpTimeMetrics()
+  } catch (error) {
+    if (error) {
+      uptimedata = null
+    }
+  }
+
   if (cpudata) {
     result.push({ type: 'CPU', unit: cpudata.unit, value: cpudata.cpu_percent })
+  }
+  if (tempdata) {
+    result.push({ type: 'CPU_TEMP', unit: tempdata.unit, value: tempdata.temp })
+  }
+  if (uptimedata) {
+    result.push({ type: 'UPTIME', unit: uptimedata.unit, value: uptimedata.time })
   }
   if (memorydata) {
     result.push({ type: 'MEMORY_AVAILABLE', unit: memorydata.unit, value: memorydata.MemAvailable })
@@ -78,7 +106,12 @@ async function metricsCollector() {
   }
 
   if (result.length) {
-    await prisma.systemMetric.createMany({ data: result })
+    try {
+      await prisma.systemMetric.createMany({ data: result })
+      metricsEventBus.emit('batch-collected', result)
+    } catch (error) {
+      Logger.error(getErrorMessage(error))
+    }
   }
 }
 

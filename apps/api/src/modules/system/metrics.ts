@@ -1,3 +1,4 @@
+import config from '#config/index.js'
 import FileReader from '#modules/FileReader.js'
 
 interface CpuTicks {
@@ -58,6 +59,15 @@ export async function generateCpuMetricsPercentage() {
   return { cpu_percent, unit: '%' }
 }
 
+export async function generateCpuTempMetrics() {
+  const filedata = new FileReader('metric', '/sys/class/thermal/thermal_zone0/temp')
+
+  const data = await filedata._readFile()
+
+  const temp = parseFloat(data.trim()) / 1000
+
+  return { temp, unit: '°C' }
+}
 export async function generateMemoryMetrics(): Promise<{
   MemAvailable: number
   MemFree: number
@@ -148,7 +158,7 @@ export async function generateNetworkRate() {
 }
 
 export async function generateStogeInfo() {
-  const paths = ['/', '/srv/storage']
+  const paths = config.storagepaths
 
   const results = await Promise.all(
     paths.map(async (item) => {
@@ -161,6 +171,16 @@ export async function generateStogeInfo() {
     }),
   )
   return results.filter((r) => r !== null)
+}
+
+export async function generateUpTimeMetrics() {
+  const filedata = new FileReader('metric', '/proc/uptime')
+
+  const data = await filedata._readFile()
+
+  const time = parseFloat(data.trim())
+
+  return { time, unit: 'seconds' }
 }
 
 function formatGB(bytes: number) {

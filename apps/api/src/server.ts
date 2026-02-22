@@ -22,7 +22,7 @@ export const createServer = (): Express => {
   })
 
   // Artificial delay for testing (remove before production)
-  app.use((_req, _res, next) => setTimeout(next, 500))
+  // app.use((_req, _res, next) => setTimeout(next, 500))
 
   // Routes
   app.use('/api/v1', v1)

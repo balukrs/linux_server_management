@@ -3,12 +3,14 @@ import { prisma } from '#lib/prisma.js'
 import metricsCollector from '#modules/system/collector.js'
 
 import { createServer } from './server.js'
+import { initSocket } from './socket.js'
 
 const port = config.port
 
 const app = createServer()
 
-const server = app.listen(port, () => {
+export const server = app.listen(port, () => {
+  const socket = initSocket(server)
   console.log(`Server listening on port ${port}`)
 
   // Scheduler
@@ -24,6 +26,7 @@ const server = app.listen(port, () => {
 
     const shutdown = () => {
       clearInterval(intervalId)
+      socket.disconnectSockets()
       server.close(() => {
         prisma
           .$disconnect()
