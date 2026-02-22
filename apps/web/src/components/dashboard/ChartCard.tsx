@@ -8,6 +8,16 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart'
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+import { periodMap } from '@linux-mgmt/shared'
+
 type configprops = {
   title: string
   info: string
@@ -15,8 +25,10 @@ type configprops = {
   color: string
 }
 
-type props = {
+interface props<T, U> {
   config: configprops
+  period: T
+  setPeriod: React.Dispatch<React.SetStateAction<U>>
 }
 
 const chartData = [
@@ -28,7 +40,7 @@ const chartData = [
   { month: 'June', desktop: 214 },
 ]
 
-export default function ChartAreaCard({ config }: props) {
+export default function ChartAreaCard<T, U>({ config, period, setPeriod }: props<T, U>) {
   const chartConfig = {
     desktop: {
       label: 'Desktop',
@@ -44,6 +56,23 @@ export default function ChartAreaCard({ config }: props) {
           <p className="text-sm text-muted-foreground">{config.info}</p>
           <div className="text-2xl font-bold">{config.details}</div>
         </div>
+        <Select
+          value={String(period)}
+          onValueChange={(val) => setPeriod((prev) => ({ ...prev, period: val }))}
+        >
+          <SelectTrigger className="w-32 rounded-lg sm:ml-auto sm:flex">
+            <SelectValue placeholder={String(period)} />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl">
+            {Object.keys(periodMap).map((item) => {
+              return (
+                <SelectItem value={item} className="rounded-lg" key={item}>
+                  {item}
+                </SelectItem>
+              )
+            })}
+          </SelectContent>
+        </Select>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>

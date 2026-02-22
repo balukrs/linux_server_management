@@ -289,6 +289,10 @@ importers:
         version: 5.9.3
 
   packages/shared:
+    dependencies:
+      '@linux-mgmt/db':
+        specifier: workspace:*
+        version: link:../db
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2

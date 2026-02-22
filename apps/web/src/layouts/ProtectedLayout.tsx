@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 import { useQuery } from '@tanstack/react-query'
-import { me } from '../api/services/auth'
+import { me as me_api } from '../api/services/auth'
 
 import FullScreenLoader from '@/components/common/PageLoader'
 
@@ -14,7 +14,7 @@ const ProtectedLayout = () => {
 
   const { isLoading } = useQuery({
     queryKey: ['me'],
-    queryFn: me,
+    queryFn: me_api,
     staleTime: 1000 * 60 * 10,
   })
 

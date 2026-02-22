@@ -1,11 +1,11 @@
-import type { TokenPayload } from '#types/Auth.js'
+import type { ReqOptimised } from '#types/Request.js'
 import type { LoginRequest, SignUpRequest } from '@linux-mgmt/shared'
 import type { Request, Response } from 'express'
 
-import { CustomError, getErrorMessage, OperationFailed } from '#utils/errors.js'
+import { CustomError, getErrorMessage, OperationFailed, UnAuthorized } from '#utils/errors.js'
 import { sendSuccess } from '#utils/response.js'
 
-import { getTokenDetails, loginUser, logoutUser, registerUser } from './services.js'
+import { loginUser, logoutUser, registerUser } from './services.js'
 
 type RequestAdd = Request & { cookies: RequestCookieType }
 
@@ -78,23 +78,15 @@ export const logout = async (req: RequestAdd, res: Response) => {
   }
 }
 
-export const getDetails = (req: RequestAdd, res: Response) => {
-  const accessToken = req.cookies.accessToken
-  try {
-    const payload = getTokenDetails(String(accessToken)) as TokenPayload
-
-    sendSuccess(res, 'Detailed Fetched Successfully', 200, {
-      email: payload.email,
-      id: payload.id,
-      role: payload.role,
-      username: payload.username,
-    })
-  } catch (error) {
-    if (error instanceof CustomError) throw error
-    throw new OperationFailed({
-      code: 'ERR_FAILED',
-      message: getErrorMessage(error),
-      statusCode: 400,
-    })
+export const getDetails = (req: ReqOptimised, res: Response) => {
+  const payload = req.tokenPayload
+  if (!payload) {
+    throw new UnAuthorized({ code: 'ERR_VALID', message: 'Not Authorized', statusCode: 401 })
   }
+  sendSuccess(res, 'Detailed Fetched Successfully', 200, {
+    email: payload.email,
+    id: payload.id,
+    role: payload.role,
+    username: payload.username,
+  })
 }

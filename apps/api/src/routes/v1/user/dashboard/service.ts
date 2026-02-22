@@ -1,3 +1,6 @@
+// Type
+import type { MetricsResponse, SummaryResponse } from '@linux-mgmt/shared'
+
 import config from '#config/index.js'
 import { prisma } from '#lib/prisma.js'
 import { OperationFailed } from '#utils/errors.js'
@@ -15,7 +18,7 @@ const getLatestMetrics = async (value: string) => {
   })
 }
 
-export const getSummary = async () => {
+export const getSummary = async (): Promise<SummaryResponse> => {
   const [cpu, cpu_temp, uptime, mem_avaialble, mem_total, mem_free, download, upload] =
     await Promise.all([
       getLatestMetrics('CPU'),
@@ -54,7 +57,10 @@ export const getSummary = async () => {
   }
 }
 
-export const getMetric = async (period: Period | undefined, type: Type | undefined) => {
+export const getMetric = async (
+  period: Period | undefined,
+  type: Type | undefined,
+): Promise<MetricsResponse> => {
   if (!period) {
     throw new OperationFailed({
       code: 'ERR_FAILED',

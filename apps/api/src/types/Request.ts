@@ -1,6 +1,10 @@
 import type { Request } from 'express'
 
-export type ReqOptimised = Request & { cookies: RequestCookieType } & { role?: string }
+import type { TokenPayload } from './Auth.js'
+
+export type ReqOptimised = Request & { cookies: RequestCookieType } & {
+  tokenPayload?: TokenPayload
+}
 
 interface RequestCookieType {
   accessToken?: string

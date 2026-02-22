@@ -17,7 +17,7 @@ export default async function authHandler(req: ReqOptimised, res: Response, next
 
   try {
     const payload = Jwt.verify(accessToken, config.secret) as TokenPayload
-    req.role = payload.role
+    req.tokenPayload = payload
     next()
   } catch (err: unknown) {
     if (getErrorMessage(err) === 'jwt expired') {
@@ -39,7 +39,7 @@ export default async function authHandler(req: ReqOptimised, res: Response, next
         secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
       })
       const payload = Jwt.verify(data.accessToken, config.secret) as TokenPayload
-      req.role = payload.role
+      req.tokenPayload = payload
       next()
     } else {
       throw new UnAuthorized({ code: 'ERR_VALID', message: getErrorMessage(err), statusCode: 401 })
