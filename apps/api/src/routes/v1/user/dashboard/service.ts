@@ -2,6 +2,7 @@ import config from '#config/index.js'
 import { prisma } from '#lib/prisma.js'
 import { OperationFailed } from '#utils/errors.js'
 import { type Period, periodMap, type Type, typeMap } from '@linux-mgmt/shared'
+import os from 'os'
 
 const getLatestMetrics = async (value: string) => {
   return await prisma.systemMetric.findFirst({
@@ -37,7 +38,20 @@ export const getSummary = async () => {
     ),
   )
 
-  return { cpu, cpu_temp, download, mem_avaialble, mem_free, mem_total, storage, upload, uptime }
+  const hostname = os.hostname()
+
+  return {
+    cpu,
+    cpu_temp,
+    download,
+    hostname,
+    mem_avaialble,
+    mem_free,
+    mem_total,
+    storage,
+    upload,
+    uptime,
+  }
 }
 
 export const getMetric = async (period: Period | undefined, type: Type | undefined) => {
