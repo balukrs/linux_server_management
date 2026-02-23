@@ -17,8 +17,10 @@ import StorageTable from '@/components/dashboard/StorageTable'
 
 // Socket
 import { socket } from '@/socket/client'
+import useSocketStore from '@/store/socket'
+import type { SystemMetric } from '@linux-mgmt/shared'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const RenderQuickStats = () => {
   return (
@@ -47,28 +49,22 @@ const RenderQuickStats = () => {
 
 const Dashboard = () => {
   const { data, isPending } = useQuery({ queryKey: ['dashboard-summary'], queryFn: summary_api })
+  const [metricsEvents, setMetricsEvents] = useState<SystemMetric[]>([])
 
-  const [isConnected, setIsConnected] = useState(socket.connected)
+  const isConnected = useSocketStore((state) => state.isConnected)
 
   useEffect(() => {
-    function onConnect() {
-      setIsConnected(true)
+    function onEvents(value: SystemMetric[]) {
+      setMetricsEvents((prev) => [...prev, ...value].flat())
     }
-
-    function onDisconnect() {
-      setIsConnected(false)
-    }
-
-    socket.on('connect', onConnect)
-    socket.on('disconnect', onDisconnect)
+    socket.on('metrics-update', onEvents)
 
     return () => {
-      socket.off('connect', onConnect)
-      socket.off('disconnect', onDisconnect)
+      socket.off('metrics-update', onEvents)
     }
-  }, [])
+  }, [isConnected])
 
-  console.log(isConnected, 'status')
+  console.log(metricsEvents)
 
   return (
     <div className="grid grid-cols-12 gap-6 grid-rows-[150px_auto]">

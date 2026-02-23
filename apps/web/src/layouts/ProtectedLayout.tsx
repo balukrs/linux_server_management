@@ -6,17 +6,40 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 
 import { useQuery } from '@tanstack/react-query'
 import { me as me_api } from '../api/services/auth'
+import { useEffect } from 'react'
 
 import FullScreenLoader from '@/components/common/PageLoader'
+import useSocketStore from '@/store/socket'
+import { socket } from '@/socket/client'
 
 const ProtectedLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(true)
+
+  const updateConnection = useSocketStore((state) => state.updateConnection)
 
   const { isLoading } = useQuery({
     queryKey: ['me'],
     queryFn: me_api,
     staleTime: 1000 * 60 * 10,
   })
+
+  useEffect(() => {
+    function onConnect() {
+      updateConnection(true)
+    }
+
+    function onDisconnect() {
+      updateConnection(false)
+    }
+
+    socket.on('connect', onConnect)
+    socket.on('disconnect', onDisconnect)
+
+    return () => {
+      socket.off('connect', onConnect)
+      socket.off('disconnect', onDisconnect)
+    }
+  }, [])
 
   if (isLoading) {
     return <FullScreenLoader />

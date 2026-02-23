@@ -123,7 +123,10 @@ async function metricsCollector() {
       await prisma.systemMetric.createMany({
         data: result.map((r) => ({ ...r, timestamp: collectedAt })),
       })
-      metricsEventBus.emit('batch-collected', result)
+      metricsEventBus.emit(
+        'batch-collected',
+        result.map((r) => ({ ...r, timestamp: collectedAt })),
+      )
     } catch (error) {
       Logger.error(getErrorMessage(error))
     }
