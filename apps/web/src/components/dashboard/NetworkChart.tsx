@@ -16,13 +16,6 @@ const NetworkGraph = () => {
 
   const reqReadings = data?.data?.data
 
-  const uploadEntries = reqReadings?.filter((item) => item.type === 'UPLOAD')
-  const downloadEntries = reqReadings?.filter((item) => item.type === 'DOWNLOAD')
-
-  const upload = (uploadEntries?.length && uploadEntries[uploadEntries.length - 1]?.value) || 0
-  const download =
-    (downloadEntries?.length && downloadEntries[downloadEntries.length - 1]?.value) || 0
-
   const filteredData = (() => {
     if (!reqReadings) return []
     const byTimestamp = new Map<
@@ -47,7 +40,8 @@ const NetworkGraph = () => {
       }))
   })()
 
-  console.log(filteredData, reqReadings)
+  const upload = (filteredData?.length && filteredData[filteredData.length - 1]?.upload) || 0
+  const download = (filteredData?.length && filteredData[filteredData.length - 1]?.downlaod) || 0
 
   if (isPending) return <Skeleton className="h-auto md:h-[80%] w-full" />
 
@@ -63,7 +57,7 @@ const NetworkGraph = () => {
       }}
       period={params.period}
       setPeriod={setParams}
-      data={[]}
+      data={filteredData || []}
     />
   )
 }

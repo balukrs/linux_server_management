@@ -17,6 +17,11 @@ export default defineConfig(({ mode }) => {
             target: proxyTarget,
             changeOrigin: true,
           },
+          '/socket.io': {
+            target: proxyTarget,
+            changeOrigin: true,
+            ws: true,
+          },
         },
       }),
     },
