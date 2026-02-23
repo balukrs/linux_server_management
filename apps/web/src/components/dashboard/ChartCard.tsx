@@ -23,34 +23,56 @@ type configprops = {
   info: string
   details: string
   color: string
+  unit: string
+  label: string
 }
 
-interface props<T, U> {
+interface props<T, U, K> {
   config: configprops
   period: T
   setPeriod: React.Dispatch<React.SetStateAction<U>>
+  data: K[]
 }
 
-const chartData = [
-  { month: 'January', desktop: 186 },
-  { month: 'February', desktop: 305 },
-  { month: 'March', desktop: 237 },
-  { month: 'April', desktop: 73 },
-  { month: 'May', desktop: 209 },
-  { month: 'June', desktop: 214 },
-]
+const formatTick = (value: string, period: string) => {
+  const date = new Date(value)
+  switch (period) {
+    case '1h':
+    case '6h':
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    // → "14:30"
+    case '24h':
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    // → "08:00"
+    case '7d':
+      return date.toLocaleDateString('en-US', { weekday: 'short' })
+    // → "Mon"
+    default:
+      return value
+  }
+}
 
-export default function ChartAreaCard<T, U>({ config, period, setPeriod }: props<T, U>) {
+const getTickInterval = (dataLength: number, period: string) => {
+  const desiredTicks = period === '7d' ? 7 : 6
+  return Math.max(0, Math.floor(dataLength / desiredTicks) - 1)
+}
+
+export default function ChartAreaCard<T, U, K>({
+  config,
+  period,
+  setPeriod,
+  data,
+}: props<T, U, K>) {
   const chartConfig = {
-    desktop: {
-      label: 'Desktop',
+    chart: {
+      label: config.label,
       color: config.color,
     },
   } satisfies ChartConfig
 
   return (
     <Card className="bg-background">
-      <CardHeader>
+      <CardHeader className="flex justify-between">
         <div className="flex flex-col space-y-1">
           <h3 className="text-2xl font-semibold leading-none tracking-tight">{config.title}</h3>
           <p className="text-sm text-muted-foreground">{config.info}</p>
@@ -60,7 +82,7 @@ export default function ChartAreaCard<T, U>({ config, period, setPeriod }: props
           value={String(period)}
           onValueChange={(val) => setPeriod((prev) => ({ ...prev, period: val }))}
         >
-          <SelectTrigger className="w-32 rounded-lg sm:ml-auto sm:flex">
+          <SelectTrigger className="w-19 rounded-lg sm:ml-auto sm:flex justify-end">
             <SelectValue placeholder={String(period)} />
           </SelectTrigger>
           <SelectContent className="rounded-xl">
@@ -76,22 +98,39 @@ export default function ChartAreaCard<T, U>({ config, period, setPeriod }: props
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <AreaChart accessibilityLayer data={chartData}>
+          <AreaChart accessibilityLayer data={data}>
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="month"
+              dataKey="timestamp"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
+              interval={getTickInterval(data.length, period as string)}
+              tickFormatter={(value) => formatTick(value, period as string)}
             />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  indicator="line"
+                  labelFormatter={(value) =>
+                    new Date(value).toLocaleString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  }
+                />
+              }
+            />
             <Area
-              dataKey="desktop"
+              dataKey="value"
               type="natural"
-              fill="var(--color-desktop)"
+              fill="var(--color-chart)"
               fillOpacity={0.4}
-              stroke="var(--color-desktop)"
+              stroke="var(--color-chart)"
             />
           </AreaChart>
         </ChartContainer>

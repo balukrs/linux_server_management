@@ -76,17 +76,28 @@ export const getMetric = async (
     })
   }
 
+  const TARGET_POINTS = 200
+
   const since = new Date(Date.now() - periodMap[period])
 
   const data = await prisma.systemMetric.findMany({
+    orderBy: {
+      timestamp: 'asc',
+    },
+
     where: {
       timestamp: { gte: since },
       type: { in: typeMap[type] },
     },
   })
 
+  const sampled =
+    data.length <= TARGET_POINTS
+      ? data
+      : data.filter((_, i) => i % Math.ceil(data.length / TARGET_POINTS) === 0)
+
   return {
-    data,
+    data: sampled,
     period: period,
     type: type,
   }

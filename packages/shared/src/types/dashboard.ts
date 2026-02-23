@@ -1,6 +1,8 @@
 import type { SystemMetric } from '@linux-mgmt/db'
 import type { ApiResponse } from './responses'
 
+export type { SystemMetric }
+
 export const periodMap = {
   '1h': 60 * 60 * 1000,
   '6h': 6 * 60 * 60 * 1000,
