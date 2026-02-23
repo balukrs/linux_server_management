@@ -16,7 +16,7 @@ export function initSocket(httpServer: HttpServer) {
   const io = new Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, SocketData>(
     httpServer,
     {
-      cors: { origin: config.clientUrl },
+      cors: { credentials: true, origin: config.clientUrl },
     },
   )
 
