@@ -8,9 +8,9 @@ import { useQuery } from '@tanstack/react-query'
 import { summary as summary_api } from '@/api/services/dashboard'
 
 // Chart
-// import ChartAreaCard from '@/components/dashboard/ChartCard'
 import CpuGraph from '@/components/dashboard/CpuGraph'
 import MemoryGraph from '@/components/dashboard/MemoryGraph'
+import NetworkGraph from '@/components/dashboard/NetworkChart'
 
 // Table
 import StorageTable from '@/components/dashboard/StorageTable'
@@ -70,14 +70,7 @@ const Dashboard = () => {
         <MemoryGraph />
       </div>
       <div className="col-span-12 md:col-span-4">
-        {/* <ChartAreaCard
-          config={{
-            title: 'Network Traffic',
-            info: '↓ 150 KB/s ↑ 20 KB/s',
-            details: '150 KB/s',
-            color: 'var(--chart-3)',
-          }}
-        /> */}
+        <NetworkGraph />
       </div>
       <div className="col-span-12">
         <StorageTable />
