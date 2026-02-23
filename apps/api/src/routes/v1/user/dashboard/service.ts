@@ -91,10 +91,20 @@ export const getMetric = async (
     },
   })
 
-  const sampled =
-    data.length <= TARGET_POINTS
-      ? data
-      : data.filter((_, i) => i % Math.ceil(data.length / TARGET_POINTS) === 0)
+  const grouped = new Map<string, typeof data>()
+  for (const row of data) {
+    const arr = grouped.get(row.type) ?? []
+    arr.push(row)
+    grouped.set(row.type, arr)
+  }
+
+  const sampled = Array.from(grouped.values())
+    .flatMap((group) =>
+      group.length <= TARGET_POINTS
+        ? group
+        : group.filter((_, i) => i % Math.ceil(group.length / TARGET_POINTS) === 0),
+    )
+    .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
 
   return {
     data: sampled,
