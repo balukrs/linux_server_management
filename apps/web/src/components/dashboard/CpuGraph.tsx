@@ -18,7 +18,7 @@ const CpuGraph = () => {
 
   const finalusage = reqReadings?.[reqReadings.length - 1]?.value || 0
 
-  if (isPending) return <Skeleton className="h-full md:h-[80%] w-full" />
+  if (isPending) return <Skeleton className="h-auto md:h-[80%] w-full" />
 
   return (
     <ChartAreaCard<string, MetricsRequest, SystemMetric>
@@ -26,9 +26,9 @@ const CpuGraph = () => {
         title: 'CPU Usage',
         info: '4 Cores',
         details: `${finalusage.toFixed(2)}%`,
-        color: 'var(--chart-1)',
+        colors: ['var(--chart-1)', 'var(--chart-4)'],
         unit: '%',
-        label: 'Usage',
+        keys: ['value'],
       }}
       period={params.period}
       setPeriod={setParams}

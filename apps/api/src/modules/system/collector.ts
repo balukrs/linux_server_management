@@ -12,6 +12,18 @@ import {
   generateUpTimeMetrics,
 } from './metrics'
 
+export async function pruneOldMetrics() {
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  try {
+    const { count } = await prisma.systemMetric.deleteMany({
+      where: { timestamp: { lt: cutoff } },
+    })
+    if (count > 0) Logger.info(`[metrics] pruned ${String(count)} records older than 7 days`)
+  } catch (error) {
+    Logger.error(`[metrics] prune failed: ${getErrorMessage(error)}`)
+  }
+}
+
 async function metricsCollector() {
   let cpudata = null
   let memorydata = null
@@ -106,8 +118,11 @@ async function metricsCollector() {
   }
 
   if (result.length) {
+    const collectedAt = new Date()
     try {
-      await prisma.systemMetric.createMany({ data: result })
+      await prisma.systemMetric.createMany({
+        data: result.map((r) => ({ ...r, timestamp: collectedAt })),
+      })
       metricsEventBus.emit('batch-collected', result)
     } catch (error) {
       Logger.error(getErrorMessage(error))

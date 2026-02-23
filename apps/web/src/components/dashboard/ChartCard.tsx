@@ -22,9 +22,9 @@ type configprops = {
   title: string
   info: string
   details: string
-  color: string
+  colors: string[]
   unit: string
-  label: string
+  keys: string[]
 }
 
 interface props<T, U, K> {
@@ -63,12 +63,9 @@ export default function ChartAreaCard<T, U, K>({
   setPeriod,
   data,
 }: props<T, U, K>) {
-  const chartConfig = {
-    chart: {
-      label: config.label,
-      color: config.color,
-    },
-  } satisfies ChartConfig
+  const chartConfig = Object.fromEntries(
+    config.keys.map((key, i) => [key, { color: config.colors[i] }]),
+  ) satisfies ChartConfig
 
   return (
     <Card className="bg-background">
@@ -112,7 +109,8 @@ export default function ChartAreaCard<T, U, K>({
               cursor={false}
               content={
                 <ChartTooltipContent
-                  indicator="line"
+                  indicator="dot"
+                  formatter={(value) => [`${Number(value).toFixed(2)} ${config.unit}`]}
                   labelFormatter={(value) =>
                     new Date(value).toLocaleString('en-US', {
                       weekday: 'short',
@@ -125,13 +123,17 @@ export default function ChartAreaCard<T, U, K>({
                 />
               }
             />
-            <Area
-              dataKey="value"
-              type="natural"
-              fill="var(--color-chart)"
-              fillOpacity={0.4}
-              stroke="var(--color-chart)"
-            />
+
+            {config.keys.map((key) => (
+              <Area
+                key={key}
+                dataKey={key}
+                type="natural"
+                fill={`var(--color-${key})`}
+                fillOpacity={0.4}
+                stroke={`var(--color-${key})`}
+              />
+            ))}
           </AreaChart>
         </ChartContainer>
       </CardContent>

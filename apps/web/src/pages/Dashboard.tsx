@@ -10,6 +10,7 @@ import { summary as summary_api } from '@/api/services/dashboard'
 // Chart
 // import ChartAreaCard from '@/components/dashboard/ChartCard'
 import CpuGraph from '@/components/dashboard/CpuGraph'
+import MemoryGraph from '@/components/dashboard/MemoryGraph'
 
 // Table
 import StorageTable from '@/components/dashboard/StorageTable'
@@ -66,14 +67,7 @@ const Dashboard = () => {
         <CpuGraph />
       </div>
       <div className="col-span-12 md:col-span-4">
-        {/* <ChartAreaCard
-          config={{
-            title: 'Memory Usage',
-            info: '40% Used',
-            details: '3.2 GB / 8 GB',
-            color: 'var(--chart-2)',
-          }}
-        /> */}
+        <MemoryGraph />
       </div>
       <div className="col-span-12 md:col-span-4">
         {/* <ChartAreaCard

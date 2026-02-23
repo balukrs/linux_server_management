@@ -1,6 +1,6 @@
 import config from '#config/index.js'
 import { prisma } from '#lib/prisma.js'
-import metricsCollector from '#modules/system/collector.js'
+import metricsCollector, { pruneOldMetrics } from '#modules/system/collector.js'
 
 import { createServer } from './server.js'
 import { initSocket } from './socket.js'
@@ -24,8 +24,12 @@ export const server = app.listen(port, () => {
     safeCollect()
     const intervalId = setInterval(safeCollect, 15_000)
 
+    void pruneOldMetrics()
+    const pruneIntervalId = setInterval(() => void pruneOldMetrics(), 60 * 60 * 1000)
+
     const shutdown = () => {
       clearInterval(intervalId)
+      clearInterval(pruneIntervalId)
       socket.disconnectSockets()
       server.close(() => {
         prisma
