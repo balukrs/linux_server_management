@@ -60,7 +60,7 @@ const PageShell = <TData, TValue>({
         </div>
       </div>
       <div className="col-span-12 flex flex-col gap-3">
-        <DataTable columns={columns} data={data} />
+        <DataTable columns={columns} data={data} isPending={false} />
         <Pagination className="justify-end" />
       </div>
     </div>

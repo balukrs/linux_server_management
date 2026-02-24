@@ -1,5 +1,6 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import type { DataTableProps } from '@/types/Table'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import {
   Table,
@@ -10,7 +11,13 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-export default function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+type isPendingType<TData, TValue> = DataTableProps<TData, TValue> & { isPending: boolean }
+
+export default function DataTable<TData, TValue>({
+  columns,
+  data,
+  isPending,
+}: isPendingType<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
@@ -41,7 +48,11 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
               <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id} className="py-4 px-6">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {isPending ? (
+                      <Skeleton className="h-4 flex-1" />
+                    ) : (
+                      flexRender(cell.column.columnDef.cell, cell.getContext())
+                    )}
                   </TableCell>
                 ))}
               </TableRow>

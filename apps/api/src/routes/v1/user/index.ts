@@ -1,9 +1,11 @@
 import { Router } from 'express'
 
-import Dashboard from './dashboard'
+import { metric, summary } from './dashboard/controller'
 
 const User: Router = Router()
 
-User.use('/dashboard', Dashboard)
+// Dashboard
+User.get('/dashboard/summary', summary)
+User.get('/dashboard/metrics', metric)
 
 export default User

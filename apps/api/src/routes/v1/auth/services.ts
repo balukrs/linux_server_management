@@ -10,14 +10,14 @@ import Jwt from 'jsonwebtoken'
 import { modifyCode } from '../services'
 
 export const findUserByEmail = async (email: string): Promise<null | User> => {
-  return prisma.user.findUnique({
+  return await prisma.user.findUnique({
     where: {
       email,
     },
   })
 }
 export const findUserById = async (id: string): Promise<null | User> => {
-  return prisma.user.findUnique({
+  return await prisma.user.findUnique({
     where: {
       id,
     },

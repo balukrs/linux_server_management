@@ -7,6 +7,7 @@ const config = {
   scheduler: process.env.SCHEDULER === 'true',
   scheduler_interval: Number(process.env.SHEDULER_INTERVAL),
   secret: process.env.APP_SECRET ?? '',
+  storagepaths: ['/', '/srv/storage'],
 }
 
 export default config

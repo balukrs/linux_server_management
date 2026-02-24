@@ -1,43 +1,26 @@
-import { Server, HardDrive, Clock, Activity } from 'lucide-react'
+import { Server, HardDrive } from 'lucide-react'
 import InfoCard from '@/components/dashboard/InfoCard'
-import { Progress } from '@/components/ui/progress'
+
+import RenderServerStatus from '@/components/dashboard/RenderServerStatus'
+import RenderDiskUsage from '@/components/dashboard/RenderDiskUsage'
+
+import { useQuery } from '@tanstack/react-query'
+import { summary as summary_api } from '@/api/services/dashboard'
 
 // Chart
-import ChartAreaCard from '@/components/dashboard/ChartCard'
+import CpuGraph from '@/components/dashboard/CpuGraph'
+import MemoryGraph from '@/components/dashboard/MemoryGraph'
+import NetworkGraph from '@/components/dashboard/NetworkChart'
 
 // Table
 import StorageTable from '@/components/dashboard/StorageTable'
 
-const RenderServerStatus = () => {
-  return (
-    <>
-      <div className="mb-2">
-        <h1 className="text-xl font-bold leading-none tracking-tight">Online</h1>
-        <small>ununtu-server-01</small>
-      </div>
-      <div className="flex gap-4 text-muted-foreground">
-        <div className="flex items-center gap-1">
-          <Clock size={13} /> <p>Up: 14d 2h</p>
-        </div>
-        <div className="flex items-center gap-1">
-          <Activity size={13} /> <p>0.45</p>
-        </div>
-      </div>
-    </>
-  )
-}
+// Socket
+import { socket } from '@/socket/client'
+import useSocketStore from '@/store/socket'
+import type { SystemMetric } from '@linux-mgmt/shared'
 
-const RenderDiskUsage = () => {
-  return (
-    <>
-      <div className="mb-4">
-        <h1 className="text-xl font-bold leading-none tracking-tight">350 GB / 500 GB</h1>
-        <small>70 % Used</small>
-      </div>
-      <Progress value={33} />
-    </>
-  )
-}
+import { useEffect, useState } from 'react'
 
 const RenderQuickStats = () => {
   return (
@@ -65,15 +48,39 @@ const RenderQuickStats = () => {
 }
 
 const Dashboard = () => {
+  const { data, isPending } = useQuery({ queryKey: ['dashboard-summary'], queryFn: summary_api })
+  const [metricsEvents, setMetricsEvents] = useState<SystemMetric[]>([])
+
+  const isConnected = useSocketStore((state) => state.isConnected)
+
+  useEffect(() => {
+    function onEvents(value: SystemMetric[]) {
+      setMetricsEvents((prev) => [...value, ...prev].flat())
+    }
+    socket.on('metrics-update', onEvents)
+
+    return () => {
+      socket.off('metrics-update', onEvents)
+    }
+  }, [isConnected])
+
   return (
     <div className="grid grid-cols-12 gap-6 grid-rows-[150px_auto]">
       <div className="col-span-12 md:col-span-4">
-        <InfoCard Icon={Server} RenderComponent={<RenderServerStatus />} title="Server Status" />
+        <InfoCard
+          Icon={Server}
+          RenderComponent={
+            <RenderServerStatus data={data} isPending={isPending} eventData={metricsEvents} />
+          }
+          title="Server Status"
+        />
       </div>
       <div className="col-span-12 md:col-span-4">
         <InfoCard
           Icon={HardDrive}
-          RenderComponent={<RenderDiskUsage />}
+          RenderComponent={
+            <RenderDiskUsage data={data} isPending={isPending} eventData={metricsEvents} />
+          }
           title="Disk Usage (Root)"
         />
       </div>
@@ -82,37 +89,16 @@ const Dashboard = () => {
       </div>
 
       <div className="col-span-12 md:col-span-4">
-        <ChartAreaCard
-          config={{
-            title: 'CPU Usage',
-            info: '4 Cores',
-            details: '48%',
-            color: 'var(--chart-1)',
-          }}
-        />
+        <CpuGraph eventData={metricsEvents} />
       </div>
       <div className="col-span-12 md:col-span-4">
-        <ChartAreaCard
-          config={{
-            title: 'Memory Usage',
-            info: '40% Used',
-            details: '3.2 GB / 8 GB',
-            color: 'var(--chart-2)',
-          }}
-        />
+        <MemoryGraph eventData={metricsEvents} />
       </div>
       <div className="col-span-12 md:col-span-4">
-        <ChartAreaCard
-          config={{
-            title: 'Network Traffic',
-            info: '↓ 150 KB/s ↑ 20 KB/s',
-            details: '150 KB/s',
-            color: 'var(--chart-3)',
-          }}
-        />
+        <NetworkGraph eventData={metricsEvents} />
       </div>
       <div className="col-span-12">
-        <StorageTable />
+        <StorageTable data={data} isPending={isPending} />
       </div>
     </div>
   )

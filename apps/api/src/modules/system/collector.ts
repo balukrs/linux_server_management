@@ -1,17 +1,36 @@
+import { metricsEventBus } from '#lib/eventbus.js'
 import { prisma } from '#lib/prisma.js'
+import Logger from '#logger.js'
+import { getErrorMessage } from '#utils/errors.js'
 
 import {
   generateCpuMetricsPercentage,
+  generateCpuTempMetrics,
   generateMemoryMetrics,
   generateNetworkRate,
   generateStogeInfo,
+  generateUpTimeMetrics,
 } from './metrics'
+
+export async function pruneOldMetrics() {
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  try {
+    const { count } = await prisma.systemMetric.deleteMany({
+      where: { timestamp: { lt: cutoff } },
+    })
+    if (count > 0) Logger.info(`[metrics] pruned ${String(count)} records older than 7 days`)
+  } catch (error) {
+    Logger.error(`[metrics] prune failed: ${getErrorMessage(error)}`)
+  }
+}
 
 async function metricsCollector() {
   let cpudata = null
   let memorydata = null
   let networkdata = null
   let storagedata = null
+  let tempdata = null
+  let uptimedata = null
 
   interface ResultType {
     type: string
@@ -53,8 +72,29 @@ async function metricsCollector() {
     }
   }
 
+  try {
+    tempdata = await generateCpuTempMetrics()
+  } catch (error) {
+    if (error) {
+      tempdata = null
+    }
+  }
+  try {
+    uptimedata = await generateUpTimeMetrics()
+  } catch (error) {
+    if (error) {
+      uptimedata = null
+    }
+  }
+
   if (cpudata) {
     result.push({ type: 'CPU', unit: cpudata.unit, value: cpudata.cpu_percent })
+  }
+  if (tempdata) {
+    result.push({ type: 'CPU_TEMP', unit: tempdata.unit, value: tempdata.temp })
+  }
+  if (uptimedata) {
+    result.push({ type: 'UPTIME', unit: uptimedata.unit, value: uptimedata.time })
   }
   if (memorydata) {
     result.push({ type: 'MEMORY_AVAILABLE', unit: memorydata.unit, value: memorydata.MemAvailable })
@@ -78,7 +118,18 @@ async function metricsCollector() {
   }
 
   if (result.length) {
-    await prisma.systemMetric.createMany({ data: result })
+    const collectedAt = new Date()
+    try {
+      await prisma.systemMetric.createMany({
+        data: result.map((r) => ({ ...r, timestamp: collectedAt })),
+      })
+      metricsEventBus.emit(
+        'batch-collected',
+        result.map((r) => ({ ...r, timestamp: collectedAt })),
+      )
+    } catch (error) {
+      Logger.error(getErrorMessage(error))
+    }
   }
 }
 
