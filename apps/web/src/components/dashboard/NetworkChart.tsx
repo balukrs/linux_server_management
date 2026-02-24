@@ -6,7 +6,7 @@ import type { MetricsRequest } from '@linux-mgmt/shared'
 import type { SystemMetric } from '@linux-mgmt/shared'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const NetworkGraph = () => {
+const NetworkGraph = ({ eventData }: { eventData: SystemMetric[] }) => {
   const [params, setParams] = useState<MetricsRequest>({ type: 'network', period: '1h' })
 
   const { data, isPending } = useQuery({
@@ -14,7 +14,10 @@ const NetworkGraph = () => {
     queryFn: () => metrics(params),
   })
 
-  const reqReadings = data?.data?.data
+  const reqUpdatedReading =
+    eventData?.filter((item) => item.type === 'UPLOAD' || item.type === 'DOWNLOAD') || []
+
+  const reqReadings = (data?.data?.data || []).concat(reqUpdatedReading.reverse())
 
   const filteredData = (() => {
     if (!reqReadings) return []

@@ -6,7 +6,7 @@ import type { MetricsRequest } from '@linux-mgmt/shared'
 import type { SystemMetric } from '@linux-mgmt/shared'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const MemoryGraph = () => {
+const MemoryGraph = ({ eventData }: { eventData: SystemMetric[] }) => {
   const [params, setParams] = useState<MetricsRequest>({ type: 'memory', period: '1h' })
 
   const { data, isPending } = useQuery({
@@ -14,7 +14,11 @@ const MemoryGraph = () => {
     queryFn: () => metrics(params),
   })
 
-  const reqReadings = data?.data?.data
+  const reqUpdatedReading =
+    eventData?.filter((item) => item.type === 'MEMORY_AVAILABLE' || item.type === 'MEMORY_TOTAL') ||
+    []
+
+  const reqReadings = (data?.data?.data || []).concat(reqUpdatedReading.reverse())
 
   const availableEntries = reqReadings?.filter((i) => i.type === 'MEMORY_AVAILABLE') ?? []
   const totalEntries = reqReadings?.filter((i) => i.type === 'MEMORY_TOTAL') ?? []
@@ -53,8 +57,8 @@ const MemoryGraph = () => {
     <ChartAreaCard<string, MetricsRequest, SystemMetric>
       config={{
         title: 'Memory Usage',
-        info: `${latestUsage.toFixed(1)}% Used`,
-        details: `${Number(available / 1024).toFixed(2)} GB / ${Number(total / 1024).toFixed(2)} GB`,
+        info: `${latestUsage.toFixed(3)}% Used`,
+        details: `${Number((total - available) / 1024).toFixed(2)} GB / ${Number(total / 1024).toFixed(2)} GB`,
         colors: ['var(--chart-2)', 'var(--chart-4)'],
         unit: '%',
         keys: ['value'],

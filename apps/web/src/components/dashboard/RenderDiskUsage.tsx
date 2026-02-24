@@ -1,16 +1,38 @@
 import { Progress } from '@/components/ui/progress'
-import type { SummaryApiResponse } from '@linux-mgmt/shared'
+import type { SummaryApiResponse, SystemMetric } from '@linux-mgmt/shared'
 
 import { Skeleton } from '@/components/ui/skeleton'
 
 const RenderDiskUsage = ({
   data,
   isPending,
+  eventData,
 }: {
   data: SummaryApiResponse | undefined
   isPending: boolean
+  eventData: SystemMetric[]
 }) => {
-  const storage = data?.data.storage
+  const reqReadings = eventData.filter((item) => item.type.endsWith('_/'))
+
+  const filteredStorage = (() => {
+    if (!reqReadings) return []
+    const byTimestamp = new Map<string, { used?: number; total?: number; item: SystemMetric }>()
+    for (const item of reqReadings) {
+      const key = String(item.timestamp)
+      if (!byTimestamp.has(key)) byTimestamp.set(key, { item })
+      const entry = byTimestamp.get(key)!
+      if (item.type.includes('TOTAL')) entry.total = item.value
+      if (item?.type.includes('USED')) entry.used = item.value
+    }
+    return Array.from(byTimestamp.values())
+      .filter((e) => e.total !== undefined && e.used !== undefined)
+      .map((e) => ({
+        total: Number(Number(e.total).toFixed(2)),
+        used: Number(Number(e.used).toFixed(2)),
+      }))
+  })()
+
+  const currentStorage = data?.data.storage
     .filter((arr) => arr[0]?.type.endsWith('_/'))
     .flat()
     .reduce((acc, x) => {
@@ -24,6 +46,8 @@ const RenderDiskUsage = ({
 
       return acc
     }, {}) as { total: number; used: number }
+
+  const storage = filteredStorage?.[0] || currentStorage
 
   const percentage = (
     storage?.total && storage?.used ? (storage.used / storage.total) * 100 : 0

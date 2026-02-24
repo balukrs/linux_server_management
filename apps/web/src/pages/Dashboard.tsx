@@ -55,7 +55,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     function onEvents(value: SystemMetric[]) {
-      setMetricsEvents((prev) => [...prev, ...value].flat())
+      setMetricsEvents((prev) => [...value, ...prev].flat())
     }
     socket.on('metrics-update', onEvents)
 
@@ -64,21 +64,23 @@ const Dashboard = () => {
     }
   }, [isConnected])
 
-  console.log(metricsEvents)
-
   return (
     <div className="grid grid-cols-12 gap-6 grid-rows-[150px_auto]">
       <div className="col-span-12 md:col-span-4">
         <InfoCard
           Icon={Server}
-          RenderComponent={<RenderServerStatus data={data} isPending={isPending} />}
+          RenderComponent={
+            <RenderServerStatus data={data} isPending={isPending} eventData={metricsEvents} />
+          }
           title="Server Status"
         />
       </div>
       <div className="col-span-12 md:col-span-4">
         <InfoCard
           Icon={HardDrive}
-          RenderComponent={<RenderDiskUsage data={data} isPending={isPending} />}
+          RenderComponent={
+            <RenderDiskUsage data={data} isPending={isPending} eventData={metricsEvents} />
+          }
           title="Disk Usage (Root)"
         />
       </div>
@@ -87,13 +89,13 @@ const Dashboard = () => {
       </div>
 
       <div className="col-span-12 md:col-span-4">
-        <CpuGraph />
+        <CpuGraph eventData={metricsEvents} />
       </div>
       <div className="col-span-12 md:col-span-4">
-        <MemoryGraph />
+        <MemoryGraph eventData={metricsEvents} />
       </div>
       <div className="col-span-12 md:col-span-4">
-        <NetworkGraph />
+        <NetworkGraph eventData={metricsEvents} />
       </div>
       <div className="col-span-12">
         <StorageTable data={data} isPending={isPending} />

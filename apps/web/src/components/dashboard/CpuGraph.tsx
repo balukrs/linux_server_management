@@ -6,7 +6,7 @@ import type { MetricsRequest } from '@linux-mgmt/shared'
 import type { SystemMetric } from '@linux-mgmt/shared'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const CpuGraph = () => {
+const CpuGraph = ({ eventData }: { eventData: SystemMetric[] }) => {
   const [params, setParams] = useState<MetricsRequest>({ type: 'cpu', period: '1h' })
 
   const { data, isPending } = useQuery({
@@ -14,7 +14,9 @@ const CpuGraph = () => {
     queryFn: () => metrics(params),
   })
 
-  const reqReadings = data?.data?.data
+  const reqUpdatedReading = eventData?.filter((item) => item.type === 'CPU') || []
+
+  const reqReadings = (data?.data?.data || []).concat(reqUpdatedReading.reverse())
 
   const finalusage = reqReadings?.[reqReadings.length - 1]?.value || 0
 

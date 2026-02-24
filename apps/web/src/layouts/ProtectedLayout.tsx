@@ -32,12 +32,14 @@ const ProtectedLayout = () => {
       updateConnection(false)
     }
 
+    socket.connect()
     socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)
 
     return () => {
       socket.off('connect', onConnect)
       socket.off('disconnect', onDisconnect)
+      socket.disconnect()
     }
   }, [])
 
