@@ -1,0 +1,33 @@
+services:
+  postgres:
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+
+  api:
+    build:
+      target: dev
+    ports:
+      - '3100:${PORT}'
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - /proc:/host/proc:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file: .env.dev
+
+  web:
+    build:
+      target: dev
+    ports:
+      - '5100:5173'
+    volumes:
+      - ./apps/web/src:/app/apps/web/src
+    env_file: .env.dev
+
+volumes:
+  postgres-dev-data:
+
+networks:
+  default:
+    name: linux-mgmt-dev
