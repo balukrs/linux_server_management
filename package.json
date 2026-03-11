@@ -8,7 +8,12 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docker:dev": "docker compose --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml up --build",
+    "docker:dev:down": "docker compose --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml down",
+    "docker:prod": "docker compose --env-file .env.prod -f docker-compose.yml up --build",
+    "docker:prod:down": "docker compose --env-file .env.prod -f docker-compose.yml down",
+    "docker:seed": "docker exec linux-machine-management-api-1 pnpm --filter @linux-mgmt/api db:seed:docker"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
